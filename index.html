@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Client for Node WebSocket</title>
+</head>
+<body>
+  <h1>WebSocket Client for Node Server</h1>
+  <button onclick="connectSocket()">Connect</button>
+  <button onclick="sendPing()">Send PING</button>
+  <button onclick="subscribe()">Subscribe</button>
+  <button onclick="unsubscribe()">Unsubscribe</button>
+  <button onclick="disconnect()">Disconnect</button>
+
+  <pre id="log"></pre>
+
+  <script>
+    let socket;
+
+    function log(message) {
+      const logArea = document.getElementById("log");
+      logArea.textContent += `${message}\n`;
+    }
+
+    function connectSocket() {
+      // Your Node.js WebSocket server URL
+      socket = new WebSocket("ws://localhost:3000/ws");
+
+      socket.onopen = () => {
+        log("✅ Connected to WebSocket server");
+      };
+
+      socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        log("📥 Received: " + JSON.stringify(msg));
+      };
+
+      socket.onclose = () => {
+        log("❌ WebSocket disconnected");
+      };
+
+      socket.onerror = (error) => {
+        log("⚠️ WebSocket error: " + error.message);
+      };
+    }
+
+    function sendPing() {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: "PING" }));
+        log("📤 Sent: PING");
+      } else {
+        log("🚫 Socket not connected");
+      }
+    }
+
+    function subscribe() {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: "SUBSCRIBE",
+          symbols: ["AAPL", "GOOG"], // example symbols
+        }));
+        log("📤 Sent: SUBSCRIBE");
+      }
+    }
+
+    function unsubscribe() {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: "UNSUBSCRIBE",
+          symbols: ["AAPL"],
+        }));
+        log("📤 Sent: UNSUBSCRIBE");
+      }
+    }
+
+    function disconnect() {
+      if (socket) {
+        socket.close();
+      }
+    }
+  </script>
+</body>
+</html>
